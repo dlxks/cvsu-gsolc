@@ -7,7 +7,6 @@
 generator client {
   provider = "prisma-client"
   output   = "../src/app/generated/prisma"
-  runtime  = "vercel-edge"
 }
 
 datasource db {
@@ -15,21 +14,26 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+//////////////////////////////////////////////////////
+// AUTHENTICATION MODELS
+//////////////////////////////////////////////////////
+
 model Account {
-  id                String  @id @default(cuid())
-  userId            String  @map("user_id")
+  id                String    @id @default(cuid())
+  userId            String    @map("user_id")
   type              String
   provider          String
-  providerAccountId String  @map("provider_account_id")
-  refresh_token     String? @db.Text
-  access_token      String? @db.Text
+  providerAccountId String    @map("provider_account_id")
+  refresh_token     String?
+  access_token      String?
   expires_at        Int?
   token_type        String?
   scope             String?
-  id_token          String? @db.Text
+  id_token          String?
   session_state     String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime? @updatedAt
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
   @@map("accounts")
@@ -45,18 +49,6 @@ model Session {
   @@map("sessions")
 }
 
-model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String?   @unique
-  emailVerified DateTime? @map("email_verified")
-  image         String?
-  accounts      Account[]
-  sessions      Session[]
-
-  @@map("users")
-}
-
 model VerificationToken {
   identifier String
   token      String
@@ -64,4 +56,235 @@ model VerificationToken {
 
   @@unique([identifier, token])
   @@map("verification_tokens")
+}
+
+//////////////////////////////////////////////////////
+// USER & RELATED MODELS
+//////////////////////////////////////////////////////
+
+model User {
+  id            String    @id @default(cuid())
+  studentId     String?   @unique
+  staffId       String?   @unique
+  firstName     String?
+  middleName    String?
+  lastName      String?
+  email         String?   @unique
+  phoneNumber   String?
+  password      String?
+  emailVerified DateTime? @map("email_verified")
+  image         String?
+  role          Role      @default(STUDENT)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime? @updatedAt
+
+  // Authentication
+  accounts Account[]
+  sessions Session[]
+
+  // Announcements
+  announcements Announcement[] @relation("CreatedAnnouncements")
+
+  // Defense Schedule Relations
+  defenseSchedulesCreated   DefenseSchedule[] @relation("CreatedByRelation")
+  defenseSchedulesUpdated   DefenseSchedule[] @relation("UpdatedByRelation")
+  defenseSchedulesAsStudent DefenseSchedule[] @relation("StudentRelation")
+
+  // Many-to-many: faculty members who are part of defense panels
+  defenseMemberships DefenseSchedule[] @relation("DefenseFacultyMembers")
+
+  // Defense requirements owned by this user
+  defenseRequirements DefenseRequirement[] @relation("OwnerDefenseRequirements")
+
+  // Advisee relationships
+  adviseesAsAdviser  Advisee[] @relation("AdviserRelation")
+  adviseesAsStudent  Advisee[] @relation("StudentRelation")
+  adviseeMemberships Advisee[] @relation("AdviseeMembers")
+
+  // Faculty documents
+  facultyDocuments FacultyDocument[]
+
+  @@map("users")
+}
+
+//////////////////////////////////////////////////////
+// ANNOUNCEMENTS
+//////////////////////////////////////////////////////
+
+model Announcement {
+  id        String    @id @default(cuid())
+  title     String
+  content   String
+  files     String[]  @default([])
+  createdBy String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+
+  creator User @relation("CreatedAnnouncements", fields: [createdBy], references: [id], onDelete: Cascade)
+
+  @@map("announcements")
+}
+
+//////////////////////////////////////////////////////
+// DEFENSE SCHEDULE & REQUIREMENTS
+//////////////////////////////////////////////////////
+model DefenseSchedule {
+  id        String          @id @default(cuid())
+  studentId String
+  category  DefenseCategory
+  date      DateTime
+  time      String
+  status    DefenseStatus   @default(PENDING)
+  createdBy String
+  updatedBy String?
+
+  // Relations
+  student     User  @relation("StudentRelation", fields: [studentId], references: [id], onDelete: Cascade)
+  createdUser User  @relation("CreatedByRelation", fields: [createdBy], references: [id], onDelete: Cascade)
+  updatedUser User? @relation("UpdatedByRelation", fields: [updatedBy], references: [id])
+
+  // Many-to-many: faculty panel members
+  facultyMembers User[] @relation("DefenseFacultyMembers")
+
+  // Uploaded requirements for this defense
+  defenseRequirements DefenseRequirement[]
+
+  // Category-specific required documents (relation fix)
+  requiredDocuments DefenseRequiredDocument[] @relation("ScheduleRequiredDocuments")
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+
+  @@map("defense_schedules")
+}
+
+model DefenseRequirement {
+  id        String    @id @default(cuid())
+  title     String
+  file      String
+  ownerId   String
+  defenseId String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+
+  owner   User            @relation("OwnerDefenseRequirements", fields: [ownerId], references: [id], onDelete: Cascade)
+  defense DefenseSchedule @relation(fields: [defenseId], references: [id], onDelete: Cascade)
+
+  @@map("defense_requirements")
+}
+
+model DefenseRequiredDocument {
+  id          String          @id @default(cuid())
+  defenseId   String
+  name        String
+  category    DefenseCategory
+  description String?
+  isMandatory Boolean         @default(true)
+  defense     DefenseSchedule @relation("ScheduleRequiredDocuments", fields: [defenseId], references: [id], onDelete: Cascade)
+
+  @@map("defense_required_documents")
+}
+
+//////////////////////////////////////////////////////
+// ADVISEE RELATIONSHIPS
+//////////////////////////////////////////////////////
+
+model Advisee {
+  id        String        @id @default(cuid())
+  adviserId String
+  studentId String
+  status    AdviseeStatus @default(PENDING)
+
+  adviser User @relation("AdviserRelation", fields: [adviserId], references: [id], onDelete: Cascade)
+  student User @relation("StudentRelation", fields: [studentId], references: [id], onDelete: Cascade)
+
+  // Many-to-many: additional faculty members
+  members User[] @relation("AdviseeMembers")
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+
+  @@map("advisees")
+}
+
+//////////////////////////////////////////////////////
+// FACULTY DOCUMENT SUBMISSIONS
+//////////////////////////////////////////////////////
+
+model FacultyDocument {
+  id        String           @id @default(cuid())
+  facultyId String
+  category  DocumentCategory
+  fileUrl   String
+  remarks   String?
+  status    DocumentStatus   @default(NONE)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime?        @updatedAt
+
+  faculty User @relation(fields: [facultyId], references: [id], onDelete: Cascade)
+
+  @@unique([facultyId, category])
+  @@map("faculty_documents")
+}
+
+//////////////////////////////////////////////////////
+// ENUMERATIONS
+//////////////////////////////////////////////////////
+
+enum Role {
+  STUDENT
+  FACULTY
+  STAFF
+  ADMIN
+}
+
+enum DefenseCategory {
+  TITLE
+  FINAL
+}
+
+enum DefenseStatus {
+  PENDING
+  APPROVED
+  COMPLETED
+  CANCELLED
+  RESCHEDULED
+}
+
+enum DocumentCategory {
+  SYLLABUS_ACCEPTANCE_FORM
+  TOS_MIDTERM
+  TOS_FINALS
+  RUBRICS_MIDTERM
+  RUBRICS_FINALS
+  EXAMINATIONS_MIDTERM
+  EXAMINATIONS_FINALS
+  GRADING_SHEET
+  RECORD
+  STUDENT_OUTPUT
+  CLASS_RECORD
+  PORTFOLIO
+}
+
+enum DocumentStatus {
+  NONE
+  SUBMITTED
+  REVISED
+  APPROVED
+}
+
+enum AdviseeStatus {
+  PENDING
+  ACTIVE
+  INACTIVE
+}
+
+enum MemberType {
+  LEADER
+  MEMBER
+}
+
+enum AnnouncementStatus {
+  VISIBLE
+  HIDDEN
 }
