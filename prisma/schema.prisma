@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client"
   output   = "../src/app/generated/prisma"
@@ -91,15 +85,15 @@ model User {
   defenseSchedulesAsStudent DefenseSchedule[] @relation("StudentRelation")
 
   // Many-to-many: faculty members who are part of defense panels
-  defenseMemberships DefenseSchedule[] @relation("DefenseFacultyMembers")
+  defenseMemberships DefenseMember[] @relation("DefenseMemberUser")
 
   // Defense requirements owned by this user
   defenseRequirements DefenseRequirement[] @relation("OwnerDefenseRequirements")
 
   // Advisee relationships
-  adviseesAsAdviser  Advisee[] @relation("AdviserRelation")
-  adviseesAsStudent  Advisee[] @relation("StudentRelation")
-  adviseeMemberships Advisee[] @relation("AdviseeMembers")
+  adviseesAsAdviser Advisee[]       @relation("AdviserRelation")
+  adviseesAsStudent Advisee[]       @relation("StudentRelation")
+  adviseeMemberOf   AdviseeMember[] @relation("AdviseeMemberUser")
 
   // Faculty documents
   facultyDocuments FacultyDocument[]
@@ -143,8 +137,8 @@ model DefenseSchedule {
   createdUser User  @relation("CreatedByRelation", fields: [createdBy], references: [id], onDelete: Cascade)
   updatedUser User? @relation("UpdatedByRelation", fields: [updatedBy], references: [id])
 
-  // Many-to-many: faculty panel members
-  facultyMembers User[] @relation("DefenseFacultyMembers")
+  // Explicit many-to-many via join table
+  members DefenseMember[]
 
   // Uploaded requirements for this defense
   defenseRequirements DefenseRequirement[]
@@ -156,6 +150,20 @@ model DefenseSchedule {
   updatedAt DateTime? @updatedAt
 
   @@map("defense_schedules")
+}
+
+model DefenseMember {
+  id        String     @id @default(cuid())
+  defenseId String
+  memberId  String
+  role      MemberType @default(MEMBER)
+  createdAt DateTime   @default(now())
+
+  defense DefenseSchedule @relation(fields: [defenseId], references: [id], onDelete: Cascade)
+  member  User            @relation("DefenseMemberUser", fields: [memberId], references: [id], onDelete: Cascade)
+
+  @@unique([defenseId, memberId])
+  @@map("defense_members")
 }
 
 model DefenseRequirement {
@@ -194,17 +202,30 @@ model Advisee {
   adviserId String
   studentId String
   status    AdviseeStatus @default(PENDING)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime?     @updatedAt
 
+  // Relations
   adviser User @relation("AdviserRelation", fields: [adviserId], references: [id], onDelete: Cascade)
   student User @relation("StudentRelation", fields: [studentId], references: [id], onDelete: Cascade)
 
-  // Many-to-many: additional faculty members
-  members User[] @relation("AdviseeMembers")
-
-  createdAt DateTime  @default(now())
-  updatedAt DateTime? @updatedAt
+  // Explicit many-to-many via join table
+  members AdviseeMember[]
 
   @@map("advisees")
+}
+
+model AdviseeMember {
+  id        String   @id @default(cuid())
+  adviseeId String
+  memberId  String
+  createdAt DateTime @default(now())
+
+  advisee Advisee @relation(fields: [adviseeId], references: [id], onDelete: Cascade)
+  member  User    @relation("AdviseeMemberUser", fields: [memberId], references: [id], onDelete: Cascade)
+
+  @@unique([adviseeId, memberId])
+  @@map("advisee_members")
 }
 
 //////////////////////////////////////////////////////

@@ -17,6 +17,7 @@ export type GetUsersParams = {
   sortBy?: string;
   sortDir?: "asc" | "desc";
 };
+
 export async function getUsers(params: GetUsersParams) {
   const {
     page = 1,
@@ -71,7 +72,6 @@ export async function getUsers(params: GetUsersParams) {
     },
   });
 
-  // ✅ normalize null → empty string for strict UI typing
   const items = users.map((u) => ({
     id: u.id,
     studentId: u.studentId ?? "",

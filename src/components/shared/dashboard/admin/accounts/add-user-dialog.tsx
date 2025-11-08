@@ -16,6 +16,7 @@ import { Label } from "@/src/components/ui/label";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { createUserAction } from "@/src/app/dashboard/(admin)/students/actions";
+import { CirclePlus } from "lucide-react";
 
 type FormData = {
   firstName: string;
@@ -53,7 +54,8 @@ export function AddUserDialog({
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button className="capitalize w-full lg:w-fit">
+        <Button className="capitalize w-full lg:w-fit flex">
+          <CirclePlus size={16} />
           Add {role.toLowerCase()}
         </Button>
       </DialogTrigger>
@@ -101,7 +103,7 @@ export function AddUserDialog({
 
           <DialogFooter>
             <Button type="submit" disabled={isPending}>
-              {isPending ? "Saving..." : `Save ${role}`}
+              {isPending ? "Saving..." : `Add ${role.toLowerCase()}`}
             </Button>
           </DialogFooter>
         </form>

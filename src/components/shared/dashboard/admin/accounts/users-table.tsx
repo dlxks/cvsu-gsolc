@@ -24,9 +24,14 @@ import {
   DropdownMenuTrigger,
 } from "@/src/components/ui/dropdown-menu";
 import { Button } from "@/src/components/ui/button";
-import { ArrowUp, RefreshCcw, Settings2 } from "lucide-react";
+import {
+  ArrowUp,
+  CirclePlus,
+  Download,
+  RefreshCcw,
+  Settings2,
+} from "lucide-react";
 import { AddUserDialog } from "./add-user-dialog";
-import TablaLoading from "../../../table-loading";
 import {
   Table,
   TableBody,
@@ -35,8 +40,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/src/components/ui/table";
-import { id } from "zod/v4/locales";
 import DataPagination from "../../../data-pagination";
+import TableLoading from "../../../table-loading";
 
 export interface UserItem {
   id: string;
@@ -223,16 +228,18 @@ const UsersTable = ({ role, initialData }: UsersTableProps) => {
                     <Button
                       onClick={() => handleExport(true)}
                       variant="outline"
-                      className="w-full"
+                      className="w-full flex items-center"
                     >
+                      <Download size={16} />
                       Export Selected
                     </Button>
                   ) : (
                     <Button
                       onClick={() => handleExport(false)}
                       variant="outline"
-                      className="w-full"
+                      className="w-full flex items-center"
                     >
+                      <Download size={16} />
                       Export All
                     </Button>
                   )}
@@ -248,7 +255,7 @@ const UsersTable = ({ role, initialData }: UsersTableProps) => {
 
       {/* Table Contents */}
       {isLoading ? (
-        <TablaLoading rows={10} />
+        <TableLoading rows={10} />
       ) : (
         <div className="overflow-hidden rounded-lg border">
           <Table>

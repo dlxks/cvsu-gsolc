@@ -60,8 +60,6 @@ export async function fetchUsersAction(params: GetUsersParams) {
   return await getUsers(params);
 }
 
-
-
 /* -------------------------------------------------------------------------- */
 /*                                CREATE USER                                 */
 /* -------------------------------------------------------------------------- */
