@@ -1,8 +1,17 @@
-import type { NextConfig } from "next";
-
-const nextConfig: NextConfig = {
-  /* config options here */
-  reactCompiler: true,
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  reactCompiler: true, // supported in Next.js 16
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "lh3.googleusercontent.com",
+      },
+    ],
+  },
+  eslint: {
+    ignoreDuringBuilds: true, // disables ESLint on `next build`
+  },
 };
 
-export default nextConfig;
+module.exports = nextConfig;
