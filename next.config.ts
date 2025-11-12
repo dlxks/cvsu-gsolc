@@ -1,6 +1,8 @@
-/** @type {import('next').NextConfig} */
-const nextConfig = {
-  reactCompiler: true, // supported in Next.js 16
+import type { NextConfig } from "next";
+
+const nextConfig: NextConfig = {
+  /* config options here */
+  reactCompiler: true,
   images: {
     remotePatterns: [
       {
@@ -9,9 +11,6 @@ const nextConfig = {
       },
     ],
   },
-  eslint: {
-    ignoreDuringBuilds: true, // disables ESLint on `next build`
-  },
 };
 
-module.exports = nextConfig;
+export default nextConfig;
