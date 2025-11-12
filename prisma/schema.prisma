@@ -77,7 +77,8 @@ model User {
   sessions Session[]
 
   // Announcements
-  announcements Announcement[] @relation("CreatedAnnouncements")
+  announcements        Announcement[] @relation("CreatedAnnouncements")
+  updatedAnnouncements Announcement[] @relation("UpdatedAnnouncements")
 
   // Defense Schedule Relations
   defenseSchedulesCreated   DefenseSchedule[] @relation("CreatedByRelation")
@@ -106,15 +107,19 @@ model User {
 //////////////////////////////////////////////////////
 
 model Announcement {
-  id        String    @id @default(cuid())
+  id        String             @id @default(cuid())
   title     String
   content   String
-  files     String[]  @default([])
+  files     String[]           @default([])
+  status    AnnouncementStatus @default(VISIBLE)
+  expiry    DateTime?
   createdBy String
-  createdAt DateTime  @default(now())
-  updatedAt DateTime? @updatedAt
+  updatedBy String?
+  createdAt DateTime           @default(now())
+  updatedAt DateTime?          @updatedAt
 
-  creator User @relation("CreatedAnnouncements", fields: [createdBy], references: [id], onDelete: Cascade)
+  creator User  @relation("CreatedAnnouncements", fields: [createdBy], references: [id], onDelete: Cascade)
+  updater User? @relation("UpdatedAnnouncements", fields: [updatedBy], references: [id], onDelete: SetNull)
 
   @@map("announcements")
 }

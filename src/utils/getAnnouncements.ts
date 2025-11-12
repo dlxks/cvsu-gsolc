@@ -28,7 +28,6 @@ export async function getAnnouncements(params: GetAnnouncementsParams) {
     const q = search.trim()
     where.OR = [
       { title: { contains: q, mode: "insensitive" } },
-      { content: { contains: q, mode: "insensitive" } }
     ]
   }
 

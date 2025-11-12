@@ -125,7 +125,7 @@ const AnnouncementsList = ({ staffId, initialData }: AnnouncementProps) => {
           <TableLoading rows={10} />
         ) : data.length > 0 ? (
           data.map((a) => (
-            <Card className="w-full md:max-w-2xs">
+            <Card className="w-full md:max-w-2xs" key={a.id}>
               <CardHeader>
                 <CardTitle>{a.title}</CardTitle>
                 <CardDescription>
@@ -133,7 +133,7 @@ const AnnouncementsList = ({ staffId, initialData }: AnnouncementProps) => {
                 </CardDescription>
               </CardHeader>
               <CardContent className="truncate" title={text}>
-                {a.content}
+                {/* content here */}
               </CardContent>
               <CardFooter>
                 <CardDescription>
