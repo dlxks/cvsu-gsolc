@@ -31,7 +31,6 @@ import { cn } from "@/src/lib/utils";
 import { AnnouncementTypes } from "@/src/types/announcement";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
-import { SerializedEditorState } from "lexical";
 import { CalendarIcon } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -45,7 +44,7 @@ export const announcementFormSchema = z.object({
   title: z.string().min(3, "Title is required"),
   status: z.nativeEnum(AnnouncementStatus),
   expiry: z.string().optional(),
-  content: z.any().optional(),
+  content: z.string().optional(), // now just plain string instead of editor state
 });
 
 export type AnnouncementFormValues = z.infer<typeof announcementFormSchema>;
@@ -56,36 +55,6 @@ export interface AnnouncementFormProps {
   onSuccess?: (announcement: AnnouncementTypes) => void;
 }
 
-const initialEditorState: SerializedEditorState = {
-  root: {
-    children: [
-      {
-        children: [
-          {
-            detail: 0,
-            format: 0,
-            mode: "normal",
-            style: "",
-            text: "",
-            type: "text",
-            version: 1,
-          },
-        ],
-        direction: "ltr",
-        format: "",
-        indent: 0,
-        type: "paragraph",
-        version: 1,
-      },
-    ],
-    direction: "ltr",
-    format: "",
-    indent: 0,
-    type: "root",
-    version: 1,
-  },
-} as unknown as SerializedEditorState;
-
 const AnnouncementForm = ({
   initialData,
   createdBy,
@@ -93,11 +62,6 @@ const AnnouncementForm = ({
 }: AnnouncementFormProps) => {
   const isEditing = Boolean(initialData);
   const [loading, setLoading] = useState(false);
-  const [editorState, setEditorState] = useState<SerializedEditorState>(
-    initialData?.content
-      ? (JSON.parse(initialData.content) as SerializedEditorState)
-      : initialEditorState
-  );
 
   const form = useForm<AnnouncementFormValues>({
     resolver: zodResolver(announcementFormSchema),
@@ -107,9 +71,7 @@ const AnnouncementForm = ({
       expiry: initialData?.expiry
         ? new Date(initialData.expiry).toISOString().slice(0, 16)
         : "",
-      content: initialData?.content
-        ? (JSON.parse(initialData.content) as SerializedEditorState)
-        : initialEditorState,
+      content: initialData?.content ?? "",
     },
   });
 
@@ -118,7 +80,7 @@ const AnnouncementForm = ({
 
     setLoading(true);
     try {
-      const dataToSubmit = { ...values, content: editorState };
+      const dataToSubmit = { ...values };
 
       const response = isEditing
         ? await updateAnnouncementAction(
@@ -137,10 +99,7 @@ const AnnouncementForm = ({
 
         onSuccess?.(response.announcement);
 
-        if (!isEditing) {
-          form.reset();
-          setEditorState(initialEditorState);
-        }
+        if (!isEditing) form.reset();
       } else {
         toast.error(response.message || "Something went wrong");
       }
@@ -254,14 +213,20 @@ const AnnouncementForm = ({
           )}
         />
 
-        {/* Content */}
+        {/* Content (plain text field now) */}
         <FormField
           control={form.control}
           name="content"
-          render={() => (
+          render={({ field }) => (
             <FormItem>
               <FormLabel>Contents</FormLabel>
-              <FormControl></FormControl>
+              <FormControl>
+                <Input
+                  {...field}
+                  disabled={loading}
+                  placeholder="Enter announcement content..."
+                />
+              </FormControl>
             </FormItem>
           )}
         />
