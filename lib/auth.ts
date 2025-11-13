@@ -48,17 +48,42 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
      * Runs on every sign-in attempt
      * Used to sync role & ensure returning users do not overwrite default fields
      */
-    async signIn({ user }) {
-      if (!user.email) return true;
+    async signIn({ user, account }) {
+      if (!user.email) return false;
 
       const existingUser = await prisma.user.findUnique({
         where: { email: user.email },
       });
 
-      // If returning user → preserve database values instead of provider defaults
       if (existingUser) {
+        // ✅ If it's a Google login, but the account isn't linked yet — link it
+        if (account?.provider === "google") {
+          const existingAccount = await prisma.account.findFirst({
+            where: {
+              userId: existingUser.id,
+              provider: "google",
+            },
+          });
+
+          if (!existingAccount) {
+            await prisma.account.create({
+              data: {
+                userId: existingUser.id,
+                provider: account.provider,
+                providerAccountId: account.providerAccountId,
+                type: account.type,
+                access_token: account.access_token,
+                token_type: account.token_type,
+                scope: account.scope,
+                id_token: account.id_token,
+              },
+            });
+          }
+        }
+
         user.id = existingUser.id;
         user.role = existingUser.role;
+        return true;
       }
 
       return true;
