@@ -13,11 +13,6 @@ const Home = async () => {
     });
   }
 
-  if (session?.user) {
-    const userInfo = session.user;
-    console.log(userInfo.role);
-  }
-
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
       <div className=" rounded-lg p-6 max-w-xl w-full">

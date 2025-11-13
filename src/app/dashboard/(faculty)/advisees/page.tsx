@@ -14,8 +14,6 @@ const AdviseesPage = async () => {
     adviserId,
   });
 
-  console.log(initialData);
-
   return (
     <div className="lg:p-6 space-y-6">
       <h1 className="text-xl font-bold tracking-wide">My Advisees</h1>

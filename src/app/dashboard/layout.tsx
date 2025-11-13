@@ -1,10 +1,10 @@
 import { auth } from "@/lib/auth";
-import UserRedirect from "@/src/components/auth/user-redirect";
 import AppSidebar from "@/src/components/shared/dashboard/nav/app-sidebar";
 import SiteHeader from "@/src/components/shared/dashboard/nav/site-header";
 import { SidebarInset, SidebarProvider } from "@/src/components/ui/sidebar";
 import React from "react";
 import { Toaster } from "sonner";
+import { redirect } from "next/navigation";
 
 export default async function DashboardLayout({
   children,
@@ -14,9 +14,7 @@ export default async function DashboardLayout({
   const session = await auth();
 
   if (!session) {
-    return (
-      <UserRedirect redirectTo="/signin" message="You must sign in first..." />
-    );
+    redirect("/signin"); // ✅ SERVER REDIRECT — stops the render immediately
   }
 
   return (

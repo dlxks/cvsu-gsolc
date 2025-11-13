@@ -5,6 +5,8 @@ import prisma from "@/lib/prisma";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
+  secret: process.env.NEXTAUTH_SECRET,
+  trustHost: true,
 
   providers: [
     GoogleProvider({
@@ -25,6 +27,21 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       },
     }),
   ],
+
+  cookies: {
+    sessionToken: {
+      name:
+        process.env.NODE_ENV === "production"
+          ? "__Secure-next-auth.session-token"
+          : "next-auth.session-token",
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: process.env.NODE_ENV === "production",
+      },
+    },
+  },
 
   callbacks: {
     /**
@@ -85,6 +102,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
    */
   events: {
     async createUser({ user }) {
+      if (!user?.id) {
+        console.warn("Skipping user creation - missing user id")
+        return
+      }
+
       await prisma.user.update({
         where: { id: user.id },
         data: { middleName: null },

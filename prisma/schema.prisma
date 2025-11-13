@@ -1,6 +1,7 @@
 generator client {
   provider = "prisma-client"
   output   = "../src/app/generated/prisma"
+  runtime  = "vercel-edge"
 }
 
 datasource db {
@@ -61,7 +62,7 @@ model User {
   studentId     String?   @unique
   staffId       String?   @unique
   firstName     String?
-  middleName    String?
+  middleName    String?   @default("")
   lastName      String?
   email         String?   @unique
   phoneNumber   String?

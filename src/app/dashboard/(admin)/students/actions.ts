@@ -97,7 +97,7 @@ export async function createUserAction(params: CreateUserProps) {
 
     return { success: true, user: newUser }
   } catch (error) {
-    console.log(`Error creating ${role.toLocaleLowerCase()}:`, error)
+    console.error(`Error creating ${role.toLocaleLowerCase()}:`, error)
     return { success: false, message: `Failed to create ${role.toLocaleLowerCase()}` }
   }
 }
