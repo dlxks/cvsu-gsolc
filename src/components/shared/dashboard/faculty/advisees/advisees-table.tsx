@@ -30,7 +30,6 @@ import {
 
 import { useDebounce } from "@/src/hooks/use-debounce";
 import DataPagination from "../../../data-pagination";
-import TableLoading from "../../../table-loading";
 import {
   Table,
   TableBody,
@@ -44,6 +43,7 @@ import { fetchAdviseesAction } from "@/src/app/dashboard/(faculty)/advisees/acti
 import { AdviseeStatus } from "@/src/app/generated/prisma/enums";
 import getAdviseeColumns from "./advisee-columns";
 import AddAdviseeDialog from "./add-advisee-dialog";
+import TableSkeleton from "../../skeleton/table-skeleton";
 
 export interface AdviseeItem {
   id: string;
@@ -240,7 +240,7 @@ const AdviseesTable: React.FC<AdviseeTableProps> = ({
 
       {/* Table */}
       {isLoading ? (
-        <TableLoading rows={10} />
+        <TableSkeleton rows={10} />
       ) : (
         <div className="overflow-hidden rounded-lg border">
           <Table>

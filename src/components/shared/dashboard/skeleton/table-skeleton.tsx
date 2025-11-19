@@ -12,6 +12,7 @@ export default function TableSkeleton({ rows = 5 }: { rows?: number }) {
           <Skeleton className="h-6 w-40" />
           <Skeleton className="h-6 w-28" />
           <Skeleton className="h-6 w-24" />
+          <Skeleton className="h-6 w-32" />
         </div>
       ))}
     </div>

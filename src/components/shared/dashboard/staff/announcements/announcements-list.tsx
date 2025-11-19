@@ -14,9 +14,9 @@ import { useCallback, useEffect, useState } from "react";
 import DataPagination from "@/src/components/shared/data-pagination";
 import Link from "next/link";
 import { useDebounce } from "@/src/hooks/use-debounce";
-import TableLoading from "../../../table-loading";
 import { fetchAnnouncementsAction } from "@/src/app/dashboard/(staff)/announcements/actions";
 import { formatDate, truncateText } from "@/src/lib/utils";
+import TableSkeleton from "../../skeleton/table-skeleton";
 
 interface CreatorProps {
   id: string;
@@ -122,7 +122,7 @@ const AnnouncementsList = ({ staffId, initialData }: AnnouncementProps) => {
       {/* List */}
       <div className="py-6 flex flex-wrap items-center justify-center gap-2">
         {isLoading ? (
-          <TableLoading rows={10} />
+          <TableSkeleton rows={10} />
         ) : data.length > 0 ? (
           data.map((a) => (
             <Card className="w-full md:max-w-2xs" key={a.id}>

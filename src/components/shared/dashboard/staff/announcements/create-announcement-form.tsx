@@ -221,11 +221,11 @@ const AnnouncementForm = ({
             <FormItem>
               <FormLabel>Contents</FormLabel>
               <FormControl>
-                <Input
+                {/* <Input
                   {...field}
                   disabled={loading}
                   placeholder="Enter announcement content..."
-                />
+                /> */}
               </FormControl>
             </FormItem>
           )}

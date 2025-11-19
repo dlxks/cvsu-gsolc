@@ -41,7 +41,7 @@ import {
   TableRow,
 } from "@/src/components/ui/table";
 import DataPagination from "../../../data-pagination";
-import TableLoading from "../../../table-loading";
+import TableSkeleton from "../../skeleton/table-skeleton";
 
 export interface UserItem {
   id: string;
@@ -255,7 +255,9 @@ const UsersTable = ({ role, initialData }: UsersTableProps) => {
 
       {/* Table Contents */}
       {isLoading ? (
-        <TableLoading rows={10} />
+        <div className="flex flex-wrap items-center justify-center gap-2">
+          <TableSkeleton rows={10} />
+        </div>
       ) : (
         <div className="overflow-hidden rounded-lg border">
           <Table>
