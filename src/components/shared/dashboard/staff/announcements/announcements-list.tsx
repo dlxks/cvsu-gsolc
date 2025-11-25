@@ -17,6 +17,7 @@ import { useDebounce } from "@/src/hooks/use-debounce";
 import { fetchAnnouncementsAction } from "@/src/app/dashboard/(staff)/announcements/actions";
 import { formatDate, truncateText } from "@/src/lib/utils";
 import TableSkeleton from "../../skeleton/table-skeleton";
+import TiptapViewer from "@/src/components/tiptap-editor/tiptap-viewer";
 
 interface CreatorProps {
   id: string;
@@ -134,6 +135,7 @@ const AnnouncementsList = ({ staffId, initialData }: AnnouncementProps) => {
               </CardHeader>
               <CardContent className="truncate" title={text}>
                 {/* content here */}
+                <TiptapViewer content={a.content} />
               </CardContent>
               <CardFooter>
                 <CardDescription>

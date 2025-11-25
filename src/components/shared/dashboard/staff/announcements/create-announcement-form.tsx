@@ -36,6 +36,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import z from "zod";
 import { toast } from "sonner";
+import Tiptap from "@/src/components/tiptap-editor/tiptap-editor";
 
 // -----------------------------
 // Zod schema
@@ -44,7 +45,7 @@ export const announcementFormSchema = z.object({
   title: z.string().min(3, "Title is required"),
   status: z.nativeEnum(AnnouncementStatus),
   expiry: z.string().optional(),
-  content: z.string().optional(), // now just plain string instead of editor state
+  content: z.string().optional(), // HTML content
 });
 
 export type AnnouncementFormValues = z.infer<typeof announcementFormSchema>;
@@ -69,9 +70,9 @@ const AnnouncementForm = ({
       title: initialData?.title ?? "",
       status: initialData?.status ?? AnnouncementStatus.VISIBLE,
       expiry: initialData?.expiry
-        ? new Date(initialData.expiry).toISOString().slice(0, 16)
+        ? new Date(initialData.expiry).toISOString()
         : "",
-      content: initialData?.content ?? "",
+      content: initialData?.content ?? "<p>Enter your announcement...</p>", // Default HTML content
     },
   });
 
@@ -79,6 +80,7 @@ const AnnouncementForm = ({
     if (!createdBy) return;
 
     setLoading(true);
+
     try {
       const dataToSubmit = { ...values };
 
@@ -213,19 +215,15 @@ const AnnouncementForm = ({
           )}
         />
 
-        {/* Content (plain text field now) */}
+        {/* Content (Tiptap HTML editor) */}
         <FormField
           control={form.control}
           name="content"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Contents</FormLabel>
+              <FormLabel>Content</FormLabel>
               <FormControl>
-                {/* <Input
-                  {...field}
-                  disabled={loading}
-                  placeholder="Enter announcement content..."
-                /> */}
+                <Tiptap value={field.value} onChange={field.onChange} />
               </FormControl>
             </FormItem>
           )}
