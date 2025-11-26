@@ -27,6 +27,7 @@ import {
   getFacultyServer,
   updateAdviseeAction,
 } from "@/src/app/dashboard/(faculty)/advisees/actions";
+import { Eye } from "lucide-react";
 
 export type AdviseeStatus = "PENDING" | "ACTIVE" | "INACTIVE";
 
@@ -108,7 +109,11 @@ export const AdviseeDrawer: React.FC<AdviseeDrawerProps> = ({
       onOpenChange={setIsOpen}
     >
       <DrawerTrigger asChild>
-        <Button variant="ghost" className="w-full">
+        <Button
+          variant="ghost"
+          className="flex items-center justify-start w-full"
+        >
+          <Eye size={16} />
           View
         </Button>
       </DrawerTrigger>

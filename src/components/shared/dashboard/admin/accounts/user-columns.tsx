@@ -10,7 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@/src/components/ui/dropdown-menu";
 import { ColumnDef } from "@tanstack/react-table";
-import { EllipsisVertical } from "lucide-react";
+import { EllipsisVertical, Trash2 } from "lucide-react";
 import DeleteConfirmDialog from "./delete-dialog";
 import {
   deleteUserAction,
@@ -160,8 +160,9 @@ const getUserColumns = ({
             >
               <Button
                 variant="ghost"
-                className="w-full justify-start text-red-600 hover:bg-red-50 pl-2"
+                className="flex items-center w-full justify-start text-red-600 hover:bg-red-50 pl-2"
               >
+                <Trash2 size={16} />
                 Delete
               </Button>
             </DeleteConfirmDialog>

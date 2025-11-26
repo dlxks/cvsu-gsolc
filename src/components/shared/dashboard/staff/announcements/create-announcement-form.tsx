@@ -38,28 +38,24 @@ import z from "zod";
 import { toast } from "sonner";
 import Tiptap from "@/src/components/tiptap-editor/tiptap-editor";
 
-// -----------------------------
-// Zod schema
-// -----------------------------
+// Schema
 export const announcementFormSchema = z.object({
-  title: z.string().min(3, "Title is required"),
+  title: z.string().min(3),
   status: z.nativeEnum(AnnouncementStatus),
   expiry: z.string().optional(),
-  content: z.string().optional(), // HTML content
+  content: z.string().optional(),
 });
 
 export type AnnouncementFormValues = z.infer<typeof announcementFormSchema>;
 
 export interface AnnouncementFormProps {
   initialData?: AnnouncementTypes | null;
-  createdBy: string | undefined;
-  onSuccess?: (announcement: AnnouncementTypes) => void;
+  createdBy?: string;
 }
 
 const AnnouncementForm = ({
   initialData,
   createdBy,
-  onSuccess,
 }: AnnouncementFormProps) => {
   const isEditing = Boolean(initialData);
   const [loading, setLoading] = useState(false);
@@ -72,7 +68,7 @@ const AnnouncementForm = ({
       expiry: initialData?.expiry
         ? new Date(initialData.expiry).toISOString()
         : "",
-      content: initialData?.content ?? "<p>Enter your announcement...</p>", // Default HTML content
+      content: initialData?.content ?? "<p>Enter your announcement...</p>",
     },
   });
 
@@ -80,34 +76,24 @@ const AnnouncementForm = ({
     if (!createdBy) return;
 
     setLoading(true);
-
     try {
-      const dataToSubmit = { ...values };
-
       const response = isEditing
-        ? await updateAnnouncementAction(
-            initialData!.id,
-            dataToSubmit,
-            createdBy
-          )
-        : await createAnnouncementAction(dataToSubmit, createdBy);
+        ? await updateAnnouncementAction(initialData!.id, values, createdBy)
+        : await createAnnouncementAction(values, createdBy);
 
-      if (response.success && response.announcement) {
-        toast.success(
-          isEditing
-            ? "Announcement updated successfully!"
-            : "Announcement created successfully!"
-        );
-
-        onSuccess?.(response.announcement);
-
-        if (!isEditing) form.reset();
-      } else {
-        toast.error(response.message || "Something went wrong");
+      if (!response.success) {
+        toast.error(response.message);
+        return;
       }
+
+      toast.success(
+        isEditing
+          ? "Announcement updated successfully."
+          : "Announcement created successfully."
+      );
     } catch (error) {
-      console.error("Error submitting announcement:", error);
-      toast.error("Failed to save announcement.");
+      console.error(error);
+      toast.error("Something went wrong.");
     } finally {
       setLoading(false);
     }
@@ -116,7 +102,6 @@ const AnnouncementForm = ({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-        {/* Title */}
         <FormField
           control={form.control}
           name="title"
@@ -124,17 +109,12 @@ const AnnouncementForm = ({
             <FormItem>
               <FormLabel>Title</FormLabel>
               <FormControl>
-                <Input
-                  {...field}
-                  disabled={loading}
-                  placeholder="Enter announcement title..."
-                />
+                <Input {...field} disabled={loading} />
               </FormControl>
             </FormItem>
           )}
         />
 
-        {/* Status */}
         <FormField
           control={form.control}
           name="status"
@@ -148,13 +128,12 @@ const AnnouncementForm = ({
                   disabled={loading}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select status" />
+                    <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {Object.values(AnnouncementStatus).map((status) => (
-                      <SelectItem key={status} value={status}>
-                        {status.charAt(0).toUpperCase() +
-                          status.slice(1).toLowerCase()}
+                    {Object.values(AnnouncementStatus).map((item) => (
+                      <SelectItem key={item} value={item}>
+                        {item}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -164,7 +143,6 @@ const AnnouncementForm = ({
           )}
         />
 
-        {/* Expiry */}
         <FormField
           control={form.control}
           name="expiry"
@@ -177,45 +155,32 @@ const AnnouncementForm = ({
                     <Button
                       variant="outline"
                       className={cn(
-                        "w-full justify-start text-left font-normal",
+                        "w-full justify-start text-left",
                         !field.value && "text-muted-foreground"
                       )}
                     >
-                      {field.value ? (
-                        format(new Date(field.value), "PPP")
-                      ) : (
-                        <span>Select a date</span>
-                      )}
+                      {field.value
+                        ? format(new Date(field.value), "PPP")
+                        : "Select a date"}
                       <CalendarIcon className="ml-auto opacity-50" size={16} />
                     </Button>
                   </FormControl>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
+
+                <PopoverContent align="start" className="w-auto p-0">
                   <Calendar
                     mode="single"
                     selected={field.value ? new Date(field.value) : undefined}
                     onSelect={(date) =>
                       field.onChange(date ? date.toISOString() : "")
                     }
-                    disabled={(date) => date < new Date()}
-                    initialFocus
                   />
-                  {field.value && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => field.onChange("")}
-                    >
-                      Clear
-                    </Button>
-                  )}
                 </PopoverContent>
               </Popover>
             </FormItem>
           )}
         />
 
-        {/* Content (Tiptap HTML editor) */}
         <FormField
           control={form.control}
           name="content"
@@ -229,8 +194,7 @@ const AnnouncementForm = ({
           )}
         />
 
-        {/* Submit */}
-        <Button type="submit" disabled={loading}>
+        <Button disabled={loading} type="submit">
           {loading
             ? isEditing
               ? "Updating..."

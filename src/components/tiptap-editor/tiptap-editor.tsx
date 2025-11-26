@@ -32,9 +32,29 @@ import {
   Underline,
   Undo,
   Redo,
+  Trash2,
+  Pilcrow,
+  Heading1,
+  Heading2,
+  Heading3,
+  Heading4,
+  Heading5,
+  Heading6,
+  LucideProps,
 } from "lucide-react";
 import { Toolbar, ToolbarDivider, ToolbarGroup } from "../ui/toolbar";
+import React from "react";
 
+type HeadingType = "paragraph" | 1 | 2 | 3 | 4 | 5 | 6;
+const HeadingIcons: Record<HeadingType, React.FC<LucideProps>> = {
+  paragraph: Pilcrow,
+  1: Heading1,
+  2: Heading2,
+  3: Heading3,
+  4: Heading4,
+  5: Heading5,
+  6: Heading6,
+};
 const HEADING_LEVELS = [1, 2, 3, 4, 5, 6] as const;
 const CHAR_LIMIT = 1000;
 
@@ -193,6 +213,8 @@ export default function Tiptap({
       },
     ];
 
+    const ActiveIcon = HeadingIcons[state.activeHeading as HeadingType];
+
     return (
       <Toolbar dense>
         <ToolbarGroup>
@@ -218,32 +240,46 @@ export default function Tiptap({
 
         <ToolbarGroup>
           {/* Headings */}
+          {/* Headings */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="flex items-center gap-1">
-                {state.headingLabel} <ChevronDown size={14} />
+                <ActiveIcon size={16} />
+                {state.headingLabel}
+                <ChevronDown size={14} />
               </Button>
             </DropdownMenuTrigger>
+
             <DropdownMenuContent className="min-w-max">
+              {/* Paragraph */}
               <DropdownMenuItem
                 onClick={() => editor.chain().focus().setParagraph().run()}
-                className={
+                className={`flex items-center gap-2 ${
                   state.activeHeading === "paragraph" ? "bg-gray-200" : ""
-                }
+                }`}
               >
+                <Pilcrow size={16} />
                 Paragraph
               </DropdownMenuItem>
-              {HEADING_LEVELS.map((level) => (
-                <DropdownMenuItem
-                  key={level}
-                  onClick={() =>
-                    editor.chain().focus().toggleHeading({ level }).run()
-                  }
-                  className={state.activeHeading === level ? "bg-gray-200" : ""}
-                >
-                  Heading {level}
-                </DropdownMenuItem>
-              ))}
+
+              {/* Headings */}
+              {HEADING_LEVELS.map((level) => {
+                const Icon = HeadingIcons[level];
+                return (
+                  <DropdownMenuItem
+                    key={level}
+                    onClick={() =>
+                      editor.chain().focus().toggleHeading({ level }).run()
+                    }
+                    className={`flex items-center gap-2 ${
+                      state.activeHeading === level ? "bg-gray-200" : ""
+                    }`}
+                  >
+                    <Icon size={16} />
+                    Heading {level}
+                  </DropdownMenuItem>
+                );
+              })}
             </DropdownMenuContent>
           </DropdownMenu>
         </ToolbarGroup>
@@ -336,17 +372,44 @@ export default function Tiptap({
     );
   };
 
+  const BottomControls = ({ editor }: { editor: Editor }) => {
+    const state = useEditorState({
+      editor,
+      selector: (ctx) => {
+        const e = ctx.editor;
+      },
+    });
+
+    return (
+      <Button
+        title="Clear Contents"
+        type="button"
+        variant="ghost"
+        onClick={() => editor.chain().clearContent().run()}
+      >
+        <Trash2 size={16} />
+      </Button>
+    );
+  };
+
   return (
     <div className="p-4 w-full mx-auto">
       <div className="border rounded-lg overflow-hidden bg-white">
         <MenuBar editor={editor} />
         <div className="p-4 min-h-[200px]">
           <EditorContent editor={editor} />
-          <div className="mt-2 text-sm text-gray-500 flex justify-end gap-4">
-            <span>
-              Characters: {charactersCount} / {CHAR_LIMIT}
-            </span>
-            <span>Words: {wordsCount}</span>
+
+          <div className="flex items-center justify-between">
+            {/* Counts */}
+            <div className="mt-2 text-sm text-gray-500 flex justify-end gap-4">
+              <span>
+                Characters: {charactersCount} / {CHAR_LIMIT}
+              </span>
+              <span>Words: {wordsCount}</span>
+            </div>
+
+            {/* Bottom controls */}
+            <BottomControls editor={editor} />
           </div>
         </div>
       </div>

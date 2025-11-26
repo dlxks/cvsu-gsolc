@@ -2,7 +2,13 @@ import { Checkbox } from "@/src/components/ui/checkbox";
 import { ColumnDef } from "@tanstack/react-table";
 import { AdviseeItem } from "./advisees-table";
 import { Badge } from "@/src/components/ui/badge";
-import { CircleAlert, CircleCheckBig, EllipsisVertical } from "lucide-react";
+import {
+  BadgeCheck,
+  CircleAlert,
+  CircleCheckBig,
+  EllipsisVertical,
+  Trash2,
+} from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -157,7 +163,6 @@ const getAdviseeColumns = ({
         </DropdownMenuTrigger>
         <DropdownMenuContent>
           {/* Accept */}
-          {/* Accept */}
           <DropdownMenuItem asChild>
             <AcceptAdviseeDialog
               itemName={`${row.original.student.firstName} ${row.original.student.lastName}`}
@@ -166,12 +171,13 @@ const getAdviseeColumns = ({
             >
               <Button
                 variant="ghost"
-                className="w-full text-green-600 hover:bg-green-50"
+                className="flex items-center justify-start w-full text-green-600 hover:bg-green-50"
                 disabled={
                   row.original.status === "ACTIVE" ||
                   row.original.status === "INACTIVE"
                 }
               >
+                <BadgeCheck size={16} />
                 Accept
               </Button>
             </AcceptAdviseeDialog>
@@ -200,8 +206,9 @@ const getAdviseeColumns = ({
             >
               <Button
                 variant="ghost"
-                className="w-full text-red-600 hover:bg-red-50"
+                className="flex items-center justify-start w-full text-red-600 hover:bg-red-50"
               >
+                <Trash2 size={16} />
                 Delete
               </Button>
             </DeleteConfirmDialog>

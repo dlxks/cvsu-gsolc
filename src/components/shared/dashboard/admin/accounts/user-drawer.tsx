@@ -16,6 +16,7 @@ import {
 import { Button } from "@/src/components/ui/button";
 import { updateUserAction } from "@/src/app/dashboard/(admin)/students/actions";
 import EditForm from "./edit-form";
+import { UserPen } from "lucide-react";
 
 export interface UserDrawerProps {
   item: UserItem;
@@ -37,7 +38,11 @@ const UserDrawer = ({ item, role = "STUDENT", fetchData }: UserDrawerProps) => {
       direction={isMobile ? "bottom" : "right"}
     >
       <DrawerTrigger asChild>
-        <Button variant="ghost" className="w-full justify-start pl-2">
+        <Button
+          variant="ghost"
+          className="flex items-center w-full justify-start pl-2"
+        >
+          <UserPen size={16} />
           Edit
         </Button>
       </DrawerTrigger>
